@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="my-5">
+    <h2>정산 기능</h2>
+    <form>
+        <div class="form-group">
+            <label for="entry_date">입차 일시</label>
+            <input type="datetime-local" class="form-control" id="entry_date">
+        </div>
+        <div class="form-group">
+            <label for="vehicle">입차 차량</label>
+            <input type="text" class="form-control" id="vehicle">
+        </div>
+        <div class="form-group">
+            <label for="fee">주차 요금</label>
+            <input type="number" class="form-control" id="fee">
+        </div>
+        <button type="submit" class="btn btn-primary">결제</button>
+    </form>
+</div>
+{% endblock %}
