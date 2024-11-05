@@ -1,1 +1,101 @@
-d
+body {
+    background-image: url('../backback.png');
+    background-size: auto;
+    background-position: center 70%;
+    background-repeat: no-repeat;
+    background-color: white;
+    min-height: 100vh;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+h1 {
+    font-size: 3em;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 0.5em;
+}
+
+p {
+    font-size: 1.2em;
+    color: black;
+    margin-bottom: 1.5em;
+}
+
+/* 위치 정보 박스 스타일 */
+.location-box {
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: -0.8em; /* 여백을 줄여 버튼과 가까워지도록 설정 */
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+}
+
+.location-title {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 0.5em;
+}
+
+.location-info {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #007bff;
+    margin-top: 0.5em;
+}
+
+/* 버튼 스타일 */
+.btn {
+    width: 100%;
+    max-width: 200px;
+    font-size: 1.2em;
+    font-weight: 600;
+    margin: 0.5em 0;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-group-vertical .btn {
+    padding: 10px;
+    margin-top: 0.5em;
+}
+
+/* 반응형 설정 */
+@media (max-width: 576px) {
+    h1 {
+        font-size: 2.5em;
+    }
+    p {
+        font-size: 1em;
+    }
+    .location-title, .location-info {
+        font-size: 1em;
+    }
+    .btn {
+        font-size: 1em;
+        padding: 8px 16px;
+    }
+    .location-box {
+        padding: 15px;
+        font-size: 1em;
+    }
+}
