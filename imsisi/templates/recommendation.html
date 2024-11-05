@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-center">
+    <div class="text-center my-5">
+        <h2>추천 위치</h2>
+        <p class="parking-location">현대백화점</p>
+        <p class="parking-spot">B1층 F07</p>
+        <div class="btn-group btn-group-lg mt-3" role="group" aria-label="Recommendation Actions">
+            <a href="{{ url_for('map_view') }}" class="btn btn-primary">지도</a>
+            <a href="{{ url_for('settings') }}" class="btn btn-primary">설정</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
