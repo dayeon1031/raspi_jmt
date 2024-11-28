@@ -6,9 +6,24 @@
         
         <!-- 위치 정보 박스 -->
         <div id="location-box" class="location-box">
-            <p id="location-title" class="location-title">추천 위치</p>
-            <p id="location-info" class="location-info">현대백화점<br>B1층 F07</p>
+            {% if record %}
+                <p id="location-title" class="location-title">
+                    {% if record.drive == 1 %}
+                        추천 위치
+                    {% else %}
+                        내 차 위치
+                    {% endif %}
+                </p>
+                <p id="location-info" class="location-info">
+                    {{ record.parking_location if record.parking_location else "추천 가능한 자리가 없습니다." }}
+                </p>
+            {% else %}
+                <p id="location-title" class="location-title">위치 정보 없음</p>
+                <p id="location-info" class="location-info">기록이 없습니다.</p>
+            {% endif %}
         </div>
+        
+        
 
         <!-- 버튼 그룹 -->
         <div class="btn-group btn-group-vertical mt-3">
@@ -16,28 +31,25 @@
             <a href="{{ url_for('map_view') }}" class="btn btn-secondary btn-block">주차장 지도</a>
             <a href="{{ url_for('payment') }}" class="btn btn-secondary btn-block">정산</a>
         </div>
+
     </div>
 </div>
 {% endblock %}
+
 <script>
-    function updateLocation(status) {
-        const locationTitle = document.getElementById("location-title");
-        const locationInfo = document.getElementById("location-info");
+    function triggerBarrier(action) {
+        console.log(`Button clicked: ${action}`);  // 버튼 클릭 로그
 
-        if (status === "recommend") {
-            locationTitle.textContent = "추천 위치";
-            locationInfo.innerHTML = "현대백화점<br>B1층 F07";
-        } else if (status === "parked") {
-            locationTitle.textContent = "내 차 위치";
-            locationInfo.innerHTML = "현대백화점<br>B1층 F07";
-        } else {
-            locationTitle.textContent = "";
-            locationInfo.innerHTML = "";
-        }
+        fetch(`/barrier?type=${action}`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Server response:', data);  // 서버 응답 로그
+            alert(data.message);
+            location.reload();
+        })
+        .catch(error => console.error('Error:', error));  // 에러 로그
     }
-
-    // 주차장 진입, 주차 완료, 주차장 외부 상태 업데이트 예시:
-    // updateLocation("recommend"); // 추천 위치일 때
-    // updateLocation("parked");    // 주차 완료일 때
-    // updateLocation("default");   // 주차장 외부일 때
 </script>
