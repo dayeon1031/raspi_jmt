@@ -1,22 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="d-flex justify-content-center">
-    <div class="text-center my-5">
-        <h2>주차 자리 추천 설정</h2>
-        <form class="setting-form">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="near_exit">
-                <label class="form-check-label" for="near_exit">출구 근처</label>
+    <div class="text-center my-5" style="max-width: 500px; width: 100%;">
+        <h2 class="mb-4" style="font-weight: 700; color: #333;">주차 자리 추천 설정</h2>
+        <form class="setting-form shadow p-4 rounded bg-light" method="POST" action="/settings">
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="near_exit" name="near_exit">
+                <label class="form-check-label" for="near_exit" style="font-size: 1.2em;">
+                    출구 근처
+                </label>
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="near_entrance">
-                <label class="form-check-label" for="near_entrance">매장 입구 근처</label>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="near_entrance" name="near_entrance">
+                <label class="form-check-label" for="near_entrance" style="font-size: 1.2em;">
+                    매장 입구 근처
+                </label>
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="closest_spot">
-                <label class="form-check-label" for="closest_spot">제일 가까운 주차 자리</label>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="nearest" name="nearest">
+                <label class="form-check-label" for="nearest" style="font-size: 1.2em;">
+                    제일 가까운 주차 자리
+                </label>
             </div>
-            <button type="submit" class="btn btn-primary mt-4">저장</button>
+            <button type="submit" class="btn btn-primary mt-4 px-4 py-2" style="font-size: 1.1em; font-weight: 600;">
+                저장
+            </button>
         </form>
     </div>
 </div>
