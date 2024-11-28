@@ -1,9 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="my-5">
+<div class="my-5 text-center">
     <h2>지도 (TopView)</h2>
     <p>주차장 지도를 표시하고, 내 차 위치를 표시합니다.</p>
-    <div id="map" style="height: 400px; background-color: lightgrey;">
+    {% if parking_location %}
+        <p class="text-center" style="margin-bottom: -1px; font-weight: bold;">현재 위치: {{ parking_location }}</p>
+    {% else %}
+        <p class="text-danger text-center" style="margin-bottom: -10px;">추천 위치가 없습니다.</p>
+    {% endif %}
+    <div id="map" style="width: 100%; max-width: 862px; height: auto; aspect-ratio: 862 / 578; background-image: url('{{ map_image }}'); background-size: cover; background-position: center; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px;">
         <!-- 지도와 차량 위치 표시 -->
     </div>
 </div>
