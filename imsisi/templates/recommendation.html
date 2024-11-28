@@ -2,12 +2,24 @@
 {% block content %}
 <div class="d-flex justify-content-center">
     <div class="text-center my-5">
-        <h2>추천 위치</h2>
-        <p class="parking-location">현대백화점</p>
-        <p class="parking-spot">B1층 F07</p>
-        <div class="btn-group btn-group-lg mt-3" role="group" aria-label="Recommendation Actions">
-            <a href="{{ url_for('map_view') }}" class="btn btn-primary">지도</a>
-            <a href="{{ url_for('settings') }}" class="btn btn-primary">설정</a>
+        <h1>차찾GO</h1>
+        
+        <!-- 추천 위치 박스 -->
+        <div id="location-box" class="location-box">
+            {% if parking_spot %}
+                <p id="location-title" class="location-title">추천 위치</p>
+                <p id="location-info" class="location-info">{{ parking_spot }}</p>
+            {% else %}
+                <p id="location-title" class="location-title text-danger">추천 위치 없음</p>
+                <p id="location-info" class="location-info">추천 가능한 자리가 없습니다.</p>
+            {% endif %}
+        </div>
+
+        <!-- 버튼 그룹 -->
+        <div class="btn-group btn-group-vertical mt-3">
+            <a href="{{ url_for('settings') }}" class="btn btn-secondary btn-block">선호 주차 자리 설정</a>
+            <a href="{{ url_for('map_view') }}" class="btn btn-secondary btn-block">주차장 지도</a>
+            <a href="{{ url_for('payment') }}" class="btn btn-secondary btn-block">정산</a>
         </div>
     </div>
 </div>
