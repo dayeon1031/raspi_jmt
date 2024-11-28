@@ -1,0 +1,43 @@
+DROP DATABASE IF EXISTS ParkingDB;
+-- 데이터베이스 생성 및 사용
+CREATE DATABASE ParkingDB;
+USE ParkingDB;
+
+-- ParkingLog 테이블 생성
+CREATE TABLE ParkingLog (
+    id VARCHAR(50) PRIMARY KEY,
+    drive TINYINT(1) DEFAULT NULL, -- 1: 움직이는 상태, 0: 주차 상태
+    entry_time DATETIME,
+    parking_location VARCHAR(50)
+);
+
+-- ParkingPreference 테이블 생성
+CREATE TABLE ParkingPreference (
+    id VARCHAR(50) PRIMARY KEY,
+    near_exit TINYINT(1) DEFAULT 0, -- 선호 옵션 1: 선택, 0: 비선택
+    near_entrance TINYINT(1) DEFAULT 0,
+    nearest TINYINT(1) DEFAULT 0
+);
+
+-- ParkingSlot 테이블 생성
+CREATE TABLE ParkingSlot (
+    slot_number INT PRIMARY KEY, -- 1~8의 값
+    occupied TINYINT(1) DEFAULT 0 -- 0: 빈 자리, 1: 점유 상태
+);
+
+-- ParkingSlot 기본 데이터 삽입
+INSERT INTO ParkingSlot (slot_number, occupied)
+VALUES 
+    (1, 0),
+    (2, 0),
+    (3, 0),
+    (4, 0),
+    (5, 0),
+    (6, 0),
+    (7, 0),
+    (8, 0);
+
+-- 각 테이블 상태 확인
+SELECT * FROM ParkingLog;
+SELECT * FROM ParkingPreference;
+SELECT * FROM ParkingSlot;
