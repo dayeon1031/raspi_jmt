@@ -2,20 +2,29 @@
 {% block content %}
 <div class="my-5">
     <h2>정산 기능</h2>
-    <form>
+    <form method="POST">
         <div class="form-group">
             <label for="entry_date">입차 일시</label>
-            <input type="datetime-local" class="form-control" id="entry_date">
+            <input type="text" class="form-control" id="entry_date" value="{{ entry_time }}" readonly>
         </div>
-        <div class="form-group">
+        <div class="form-group mt-3">
             <label for="vehicle">입차 차량</label>
-            <input type="text" class="form-control" id="vehicle">
+            <input type="text" class="form-control" id="vehicle" value="{{ vehicle_id }}" readonly>
         </div>
-        <div class="form-group">
+        <div class="form-group mt-3">
             <label for="fee">주차 요금</label>
-            <input type="number" class="form-control" id="fee">
+            <input type="text" class="form-control" id="fee" value="{{ parking_fee }} 원" readonly>
         </div>
-        <button type="submit" class="btn btn-primary">결제</button>
+        <button type="submit" class="btn btn-primary mt-3">결제</button>
     </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert alert-success mt-3">
+                {% for category, message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 </div>
 {% endblock %}
