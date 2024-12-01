@@ -19,4 +19,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    function checkDriveStatus() {
+        fetch('/check_drive')  // /check_drive 엔드포인트에 요청
+            .then(response => response.json())
+            .then(data => {
+                console.log('Check drive status response:', data); // 응답 로그 추가
+                if (data.status === 'success') {
+                    if (data.drive === 0) {
+                        console.log('Drive is 0, redirecting to parking.html'); // 조건 로그 추가
+                        window.location.href = "{{ url_for('parking') }}";
+                    }
+                }
+            })
+            .catch(error => console.error('Error checking drive status:', error));
+    }
+
+    setInterval(checkDriveStatus, 3000);
+</script>
+
 {% endblock %}
