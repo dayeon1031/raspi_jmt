@@ -15,7 +15,7 @@ app.logger.setLevel(logging.DEBUG)  # Flask 내부 로그 활성화
 # 데이터베이스 연결 함수
 def get_db_connection():
     return pymysql.connect(
-        host='localhost',
+        host='192.168.0.176',
         user='root',
         password='audwlsrh1004*',  # 실제 MySQL 비밀번호 입력
         db='ParkingDB',
@@ -121,6 +121,7 @@ def barrier():
 
     return jsonify({'message': '잘못된 요청입니다.'}), 400
 # 추천 위치 페이지
+# 추천 위치 페이지
 @app.route('/recommendation', methods=['GET'])
 def recommendation():
     vehicle_number = session.get('vehicle_number', None)
@@ -131,6 +132,24 @@ def recommendation():
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
+            # entry_time 확인
+            cursor.execute("""
+                SELECT entry_time
+                FROM ParkingLog
+                WHERE id = %s
+                LIMIT 1
+            """, (vehicle_number,))
+            log = cursor.fetchone()
+
+            # entry_time이 없으면 추천 위치 표시하지 않음
+            if not log or not log['entry_time']:
+                app.logger.debug(f"No entry_time for vehicle {vehicle_number}")
+                return render_template(
+                    'recommendation.html',
+                    parking_location=None,
+                    parking_spot="추천 가능한 자리가 없습니다."
+                )
+
             # 선호도 가져오기
             cursor.execute("""
                 SELECT near_exit, near_entrance, nearest
@@ -141,7 +160,11 @@ def recommendation():
 
             if not preference:
                 app.logger.debug(f"No preference found for vehicle: {vehicle_number}")
-                return "Parking preference not found.", 404
+                return render_template(
+                    'recommendation.html',
+                    parking_location=None,
+                    parking_spot="추천 가능한 자리가 없습니다."
+                )
 
             # 우선순위 설정
             if preference['nearest'] == 1:
@@ -185,6 +208,35 @@ def recommendation():
     parking_location = "현대백화점"
     parking_spot = recommended_slot if recommended_slot else "추천 가능한 자리가 없습니다."
     return render_template('recommendation.html', parking_location=parking_location, parking_spot=parking_spot)
+@app.route('/check_drive', methods=['GET'])
+def check_drive():
+    vehicle_number = session.get('vehicle_number', None)
+
+    if not vehicle_number:
+        app.logger.debug("No vehicle_number in session.")
+        return jsonify({'status': 'error', 'message': '차량 번호가 필요합니다.'}), 400
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT drive
+                FROM ParkingLog
+                WHERE id = %s
+                LIMIT 1
+            """, (vehicle_number,))
+            result = cursor.fetchone()
+
+            if result and result['drive'] is not None:
+                app.logger.debug(f"Drive value for vehicle {vehicle_number}: {result['drive']}")
+                return jsonify({'status': 'success', 'drive': result['drive']})
+            else:
+                app.logger.debug(f"No drive value for vehicle {vehicle_number}.")
+                return jsonify({'status': 'error', 'message': 'drive 값이 없습니다.'})
+    finally:
+        conn.close()
+
+
 
 @app.route('/parking', methods=['GET'])
 def parking():
@@ -230,8 +282,9 @@ def payment():
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
+            # 정산 정보 가져오기
             cursor.execute("""
-                SELECT entry_time, id
+                SELECT entry_time, id, payment
                 FROM ParkingLog
                 WHERE id = %s AND entry_time IS NOT NULL
                 ORDER BY entry_time DESC
@@ -242,22 +295,38 @@ def payment():
             if record:
                 entry_time = record['entry_time']
                 vehicle_id = record['id']
+                payment_status = record['payment']
                 current_time = datetime.now()
 
+                # 요금 계산 (1분당 3000 원)
                 total_minutes = (current_time - entry_time).total_seconds() / 60
                 parking_fee = int(total_minutes) * 3000
             else:
                 entry_time = None
                 vehicle_id = None
                 parking_fee = 0
+                payment_status = 0
     finally:
         conn.close()
 
     if request.method == 'POST':
-        flash("정산 완료!", "success")
+        # POST 요청 시 payment 값 업데이트
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE ParkingLog
+                    SET payment = 1
+                    WHERE id = %s AND entry_time IS NOT NULL
+                """, (vehicle_number,))
+                conn.commit()
+            flash("정산 완료!", "success")
+        finally:
+            conn.close()
+
         return redirect(url_for('vehicle'))
 
-    return render_template('payment.html', entry_time=entry_time, vehicle_id=vehicle_id, parking_fee=parking_fee)
+    return render_template('payment.html', entry_time=entry_time, vehicle_id=vehicle_id, parking_fee=parking_fee, payment_status=payment_status)
 
 # 지도 페이지
 @app.route('/map', methods=['GET'])
