@@ -15,8 +15,17 @@
             <label for="fee">주차 요금</label>
             <input type="text" class="form-control" id="fee" value="{{ parking_fee }} 원" readonly>
         </div>
-        <button type="submit" class="btn btn-primary mt-3">결제</button>
+        
+        {% if payment_status == 1 %}
+            <!-- 이미 정산된 경우 -->
+            <button type="button" class="btn btn-success mt-3" disabled>이미 정산 완료</button>
+        {% else %}
+            <!-- 정산이 필요한 경우 -->
+            <button type="submit" class="btn btn-primary mt-3">결제</button>
+        {% endif %}
     </form>
+    
+    <!-- 성공 메시지 표시 -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="alert alert-success mt-3">
