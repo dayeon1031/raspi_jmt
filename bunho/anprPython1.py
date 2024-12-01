@@ -41,7 +41,7 @@ def getPixelFormat(shape, dtype):
 def get_db_connection():
     """MySQL 데이터베이스 연결"""
     return pymysql.connect(
-        host='localhost',
+        host='192.168.0.176',
         user='root',
         password='audwlsrh1004*',
         db='ParkingDB',
@@ -146,7 +146,7 @@ def main():
         print(error)
         return
 
-    arduino_port = 'COM8'  # Arduino 포트 설정
+    arduino_port = 'COM3'  # Arduino 포트 설정
     readPixelsFromWebcam('text', 'v', arduino_port)
 
 if __name__ == '__main__':
