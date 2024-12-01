@@ -21,37 +21,41 @@ def get_db_connection():
         db='ParkingDB',
         charset='utf8mb4',
         cursorclass=pymysql.cursors.DictCursor
-    )
+    ) 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+    
+# 캐시 비활성화
+@app.after_request
+def disable_cache(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
 @app.route('/vehicle', methods=['GET', 'POST'])
 def vehicle():
     if request.method == 'POST':
         vehicle_number = request.form['vehicle_number']
-        session['vehicle_number'] = vehicle_number  # 세션에 차량 번호 저장
+        session['vehicle_number'] = vehicle_number
+        app.logger.debug(f"Processing vehicle number: {vehicle_number}")
 
-        # ParkingLog와 ParkingPreference 테이블에 id 삽입
         conn = get_db_connection()
         try:
             with conn.cursor() as cursor:
-                # ParkingLog의 id 컬럼에만 차량 번호 삽입
-                cursor.execute("""
-                    INSERT IGNORE INTO ParkingLog (id)
-                    VALUES (%s)
-                """, (vehicle_number,))
-                # ParkingPreference의 id 컬럼에 차량 번호 삽입
-                cursor.execute("""
-                    INSERT IGNORE INTO ParkingPreference (id)
-                    VALUES (%s)
-                """, (vehicle_number,))
+                cursor.execute("INSERT IGNORE INTO ParkingLog (id) VALUES (%s)", (vehicle_number,))
+                cursor.execute("INSERT IGNORE INTO ParkingPreference (id) VALUES (%s)", (vehicle_number,))
             conn.commit()
         finally:
             conn.close()
 
-        return redirect(url_for('settings'))  # 선호 자리 설정 페이지로 이동
+        return redirect(url_for('settings'))
 
-    # GET 요청: vehicle.html 반환 시 Content-Length 설정
     response = make_response(render_template('vehicle.html'))
     response.headers['Content-Length'] = str(len(response.get_data()))
     return response
+
 # 선호 자리 설정 페이지
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
