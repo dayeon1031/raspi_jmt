@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash, make_response
 import pymysql
 from datetime import datetime
 from flask_cors import CORS
@@ -48,8 +48,10 @@ def vehicle():
 
         return redirect(url_for('settings'))  # 선호 자리 설정 페이지로 이동
 
-    return render_template('vehicle.html')
-
+    # GET 요청: vehicle.html 반환 시 Content-Length 설정
+    response = make_response(render_template('vehicle.html'))
+    response.headers['Content-Length'] = str(len(response.get_data()))
+    return response
 # 선호 자리 설정 페이지
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
