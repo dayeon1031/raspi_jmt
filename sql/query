@@ -1,3 +1,9 @@
+DROP USER 'root'@'%';
+-- 외부 접속 사용자 생성 및 권한 부여
+CREATE USER 'root'@'%' IDENTIFIED BY 'audwlsrh1004*';
+GRANT ALL PRIVILEGES ON ParkingDB.* TO 'root'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
 DROP DATABASE IF EXISTS ParkingDB;
 -- 데이터베이스 생성 및 사용
 CREATE DATABASE ParkingDB;
@@ -8,7 +14,8 @@ CREATE TABLE ParkingLog (
     id VARCHAR(50) PRIMARY KEY,
     drive TINYINT(1) DEFAULT NULL, -- 1: 움직이는 상태, 0: 주차 상태
     entry_time DATETIME,
-    parking_location VARCHAR(50)
+    parking_location VARCHAR(50),
+    payment TINYINT(1) DEFAULT 0
 );
 
 -- ParkingPreference 테이블 생성
@@ -32,8 +39,8 @@ VALUES
     (2, 0),
     (3, 0),
     (4, 0),
-    (5, 0),
-    (6, 0),
+    (5, 1),
+    (6, 1),
     (7, 0),
     (8, 0);
 
