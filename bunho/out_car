@@ -1,0 +1,150 @@
+from ctypes import *
+import numpy as np
+import cv2
+import pymysql
+import serial
+import serial.tools.list_ports
+import time
+
+# DLL 경로 설정
+def getLibPath():
+    return r'C:\Users\USER\Desktop\tsanpr-KR-v2.4.2M\windows-x86_64\tsanpr.dll'
+
+LIB_PATH = getLibPath()
+lib = cdll.LoadLibrary(LIB_PATH)
+
+lib.anpr_initialize.argtype = c_char_p
+lib.anpr_initialize.restype = c_char_p
+lib.anpr_read_pixels.argtypes = (c_char_p, c_int32, c_int32, c_int32, c_char_p, c_char_p, c_char_p)
+lib.anpr_read_pixels.restype = c_char_p
+
+def initialize():
+    error = lib.anpr_initialize('text')
+    return error.decode('utf8') if error else error
+
+def getPixelFormat(shape, dtype):
+    if len(shape) == 2:
+        if dtype == np.uint8:
+            return 'GRAY'
+    elif len(shape) == 3:
+        channels = shape[2]
+        if channels == 3 and dtype == np.uint8:
+            return 'RGB'
+        elif channels == 4 and dtype == np.uint8:
+            return 'RGBA'
+    return 'UNKNOWN'
+
+# 데이터베이스 연결 함수
+def get_db_connection():
+    return pymysql.connect(
+        host='192.168.0.176',
+        user='root',
+        password='audwlsrh1004*',
+        db='ParkingDB',
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+# 아두이노 제어 함수
+def controlServo(arduino_port):
+    ports = serial.tools.list_ports.comports()
+    port_found = any(port.device == arduino_port for port in ports)
+    if not port_found:
+        print(f"Port {arduino_port} not found.")
+        return
+
+    try:
+        with serial.Serial(arduino_port, 9600, timeout=1) as arduino:
+            time.sleep(2)
+            arduino.write(b'ACTIVATE\n')  # 신호 전송
+            print("Signal sent to Arduino: ACTIVATE")
+            while arduino.in_waiting > 0:
+                response = arduino.readline().decode('utf-8').strip()
+                print(f"Arduino response: {response}")
+    except serial.SerialException as e:
+        print(f"Error communicating with Arduino: {e}")
+
+# 데이터베이스 확인 및 처리 함수
+def process_plate_number(detected_plate, arduino_port):
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT payment
+                FROM ParkingLog
+                WHERE id = %s
+            """, (detected_plate,))
+            result = cursor.fetchone()
+
+            if result:
+                payment_status = result['payment']
+                if payment_status == 1:
+                    print(f"Plate {detected_plate} payment status: {payment_status}. Sending signal to Arduino.")
+                    controlServo(arduino_port)
+                else:
+                    print(f"Plate {detected_plate} payment status: {payment_status}. No signal sent.")
+            else:
+                print(f"Plate {detected_plate} not found in ParkingLog.")
+    finally:
+        conn.close()
+def apply_unsharp_filter(image):
+    """Unsharp Masking 필터를 적용하여 이미지 선명도를 향상"""
+    blurred = cv2.GaussianBlur(image, (9, 9), 10.0)
+    sharpened = cv2.addWeighted(image, 1.5, blurred, -0.5, 0)
+    return sharpened
+
+# 웹캠을 통해 번호판 인식 및 처리
+def readPixelsFromWebcam(outputFormat, options, arduino_port):
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print("Error: Could not open webcam.")
+        return
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Error: Could not read frame.")
+            break
+
+        # Unsharp Masking 필터 적용
+        frame = apply_unsharp_filter(frame)
+
+        height, width = frame.shape[:2]
+        pixelFormat = getPixelFormat(frame.shape, frame.dtype)
+        if pixelFormat == 'UNKNOWN':
+            continue
+
+        result = lib.anpr_read_pixels(
+            frame.tobytes(),
+            width,
+            height,
+            frame.strides[0],
+            pixelFormat.encode('utf-8'),
+            outputFormat.encode('utf-8'),
+            options.encode('utf-8')
+        )
+
+        detected_plate = result.decode('utf8').strip()
+        print(f"Detected plate: {detected_plate}")
+
+        if detected_plate:
+            process_plate_number(detected_plate, arduino_port)
+
+        cv2.imshow("Webcam", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    
+def main():
+    error = initialize()
+    if error:
+        print(error)
+        return
+
+    arduino_port = 'COM8'  # 아두이노 포트 설정
+    readPixelsFromWebcam('text', 'v', arduino_port)
+
+if __name__ == '__main__':
+    main()
